@@ -1,37 +1,39 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
 // Gear component
 export function Gear({ size = 1, teeth = 12, thickness = 0.3, color = '#4a9eff' }) {
-  const shape = new THREE.Shape();
-  const outerRadius = size;
-  const innerRadius = size * 0.7;
-  const toothHeight = size * 0.15;
-  
-  for (let i = 0; i < teeth; i++) {
-    const angle1 = (i / teeth) * Math.PI * 2;
-    const angle2 = ((i + 0.3) / teeth) * Math.PI * 2;
-    const angle3 = ((i + 0.5) / teeth) * Math.PI * 2;
-    const angle4 = ((i + 0.8) / teeth) * Math.PI * 2;
+  const geometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    const outerRadius = size;
+    const toothHeight = size * 0.15;
     
-    if (i === 0) {
-      shape.moveTo(Math.cos(angle1) * outerRadius, Math.sin(angle1) * outerRadius);
+    for (let i = 0; i < teeth; i++) {
+      const angle1 = (i / teeth) * Math.PI * 2;
+      const angle2 = ((i + 0.3) / teeth) * Math.PI * 2;
+      const angle3 = ((i + 0.5) / teeth) * Math.PI * 2;
+      const angle4 = ((i + 0.8) / teeth) * Math.PI * 2;
+      
+      if (i === 0) {
+        shape.moveTo(Math.cos(angle1) * outerRadius, Math.sin(angle1) * outerRadius);
+      }
+      shape.lineTo(Math.cos(angle2) * (outerRadius + toothHeight), Math.sin(angle2) * (outerRadius + toothHeight));
+      shape.lineTo(Math.cos(angle3) * (outerRadius + toothHeight), Math.sin(angle3) * (outerRadius + toothHeight));
+      shape.lineTo(Math.cos(angle4) * outerRadius, Math.sin(angle4) * outerRadius);
     }
-    shape.lineTo(Math.cos(angle2) * (outerRadius + toothHeight), Math.sin(angle2) * (outerRadius + toothHeight));
-    shape.lineTo(Math.cos(angle3) * (outerRadius + toothHeight), Math.sin(angle3) * (outerRadius + toothHeight));
-    shape.lineTo(Math.cos(angle4) * outerRadius, Math.sin(angle4) * outerRadius);
-  }
-  shape.closePath();
-  
-  const holeShape = new THREE.Shape();
-  holeShape.absarc(0, 0, size * 0.15, 0, Math.PI * 2, false);
-  shape.holes.push(holeShape);
-  
-  const extrudeSettings = { depth: thickness, bevelEnabled: false };
+    shape.closePath();
+    
+    const holeShape = new THREE.Shape();
+    holeShape.absarc(0, 0, size * 0.15, 0, Math.PI * 2, false);
+    shape.holes.push(holeShape);
+    
+    const extrudeSettings = { depth: thickness, bevelEnabled: false };
+    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    return geo;
+  }, [size, teeth, thickness]);
   
   return (
-    <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -thickness / 2, 0]}>
-      <extrudeGeometry args={[shape, extrudeSettings]} />
+    <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -thickness / 2, 0]} geometry={geometry}>
       <meshStandardMaterial color={color} metalness={0.6} roughness={0.3} />
     </mesh>
   );
@@ -150,26 +152,29 @@ export function Bracket({ color = '#444455' }) {
 
 // Spring component
 export function Spring({ color = '#00d9ff' }) {
-  const points = [];
-  const coils = 8;
-  const height = 1;
-  const radius = 0.2;
-  
-  for (let i = 0; i <= coils * 32; i++) {
-    const t = i / (coils * 32);
-    const angle = t * coils * Math.PI * 2;
-    points.push(new THREE.Vector3(
-      Math.cos(angle) * radius,
-      t * height - height / 2,
-      Math.sin(angle) * radius
-    ));
-  }
-  
-  const curve = new THREE.CatmullRomCurve3(points);
+  const geometry = useMemo(() => {
+    const points = [];
+    const coils = 8;
+    const height = 1;
+    const radius = 0.2;
+    
+    for (let i = 0; i <= coils * 32; i++) {
+      const t = i / (coils * 32);
+      const angle = t * coils * Math.PI * 2;
+      points.push(new THREE.Vector3(
+        Math.cos(angle) * radius,
+        t * height - height / 2,
+        Math.sin(angle) * radius
+      ));
+    }
+    
+    const curve = new THREE.CatmullRomCurve3(points);
+    const geo = new THREE.TubeGeometry(curve, 128, 0.03, 8, false);
+    return geo;
+  }, []);
   
   return (
-    <mesh>
-      <tubeGeometry args={[curve, 128, 0.03, 8, false]} />
+    <mesh geometry={geometry}>
       <meshStandardMaterial color={color} metalness={0.7} roughness={0.3} />
     </mesh>
   );
