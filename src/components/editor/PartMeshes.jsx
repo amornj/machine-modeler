@@ -3,39 +3,17 @@ import * as THREE from 'three';
 
 // Gear component
 export function Gear({ size = 1, teeth = 12, thickness = 0.3, color = '#4a9eff' }) {
-  const geometry = useMemo(() => {
-    const shape = new THREE.Shape();
-    const outerRadius = size;
-    const toothHeight = size * 0.15;
-    
-    for (let i = 0; i < teeth; i++) {
-      const angle1 = (i / teeth) * Math.PI * 2;
-      const angle2 = ((i + 0.3) / teeth) * Math.PI * 2;
-      const angle3 = ((i + 0.5) / teeth) * Math.PI * 2;
-      const angle4 = ((i + 0.8) / teeth) * Math.PI * 2;
-      
-      if (i === 0) {
-        shape.moveTo(Math.cos(angle1) * outerRadius, Math.sin(angle1) * outerRadius);
-      }
-      shape.lineTo(Math.cos(angle2) * (outerRadius + toothHeight), Math.sin(angle2) * (outerRadius + toothHeight));
-      shape.lineTo(Math.cos(angle3) * (outerRadius + toothHeight), Math.sin(angle3) * (outerRadius + toothHeight));
-      shape.lineTo(Math.cos(angle4) * outerRadius, Math.sin(angle4) * outerRadius);
-    }
-    shape.closePath();
-    
-    const holeShape = new THREE.Shape();
-    holeShape.absarc(0, 0, size * 0.15, 0, Math.PI * 2, false);
-    shape.holes.push(holeShape);
-    
-    const extrudeSettings = { depth: thickness, bevelEnabled: false };
-    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    return geo;
-  }, [size, teeth, thickness]);
-  
   return (
-    <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -thickness / 2, 0]} geometry={geometry}>
-      <meshStandardMaterial color={color} metalness={0.6} roughness={0.3} />
-    </mesh>
+    <group>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[size, size, thickness, teeth]} />
+        <meshStandardMaterial color={color} metalness={0.6} roughness={0.3} />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[size * 0.3, size * 0.3, thickness * 1.1, 16]} />
+        <meshStandardMaterial color="#222222" metalness={0.8} roughness={0.2} />
+      </mesh>
+    </group>
   );
 }
 
@@ -65,17 +43,14 @@ export function Bearing({ outerRadius = 0.4, innerRadius = 0.15, width = 0.2, co
 export function Motor({ color = '#2a2a3e' }) {
   return (
     <group>
-      {/* Motor body */}
       <mesh position={[0, 0, 0]}>
         <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.4} />
       </mesh>
-      {/* Motor shaft */}
       <mesh position={[0, 0.7, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 0.4, 16]} />
         <meshStandardMaterial color="#888888" metalness={0.8} roughness={0.2} />
       </mesh>
-      {/* Motor base */}
       <mesh position={[0, -0.6, 0]}>
         <boxGeometry args={[0.8, 0.2, 0.8]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.4} />
@@ -88,12 +63,10 @@ export function Motor({ color = '#2a2a3e' }) {
 export function Pulley({ radius = 0.4, width = 0.2, color = '#4a9eff' }) {
   return (
     <group rotation={[Math.PI / 2, 0, 0]}>
-      {/* Main wheel */}
       <mesh>
         <cylinderGeometry args={[radius, radius, width, 32]} />
         <meshStandardMaterial color={color} metalness={0.6} roughness={0.3} />
       </mesh>
-      {/* Groove */}
       <mesh>
         <torusGeometry args={[radius, width * 0.3, 8, 32]} />
         <meshStandardMaterial color="#333344" metalness={0.7} roughness={0.2} />
@@ -116,12 +89,10 @@ export function Belt({ color = '#1a1a1a' }) {
 export function Piston({ color = '#666666' }) {
   return (
     <group>
-      {/* Cylinder */}
       <mesh position={[0, 0, 0]}>
         <cylinderGeometry args={[0.3, 0.3, 0.8, 32]} />
         <meshStandardMaterial color={color} metalness={0.7} roughness={0.3} />
       </mesh>
-      {/* Rod */}
       <mesh position={[0, 0.6, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 0.5, 16]} />
         <meshStandardMaterial color="#888888" metalness={0.8} roughness={0.2} />
@@ -152,31 +123,15 @@ export function Bracket({ color = '#444455' }) {
 
 // Spring component
 export function Spring({ color = '#00d9ff' }) {
-  const geometry = useMemo(() => {
-    const points = [];
-    const coils = 8;
-    const height = 1;
-    const radius = 0.2;
-    
-    for (let i = 0; i <= coils * 32; i++) {
-      const t = i / (coils * 32);
-      const angle = t * coils * Math.PI * 2;
-      points.push(new THREE.Vector3(
-        Math.cos(angle) * radius,
-        t * height - height / 2,
-        Math.sin(angle) * radius
-      ));
-    }
-    
-    const curve = new THREE.CatmullRomCurve3(points);
-    const geo = new THREE.TubeGeometry(curve, 128, 0.03, 8, false);
-    return geo;
-  }, []);
-  
   return (
-    <mesh geometry={geometry}>
-      <meshStandardMaterial color={color} metalness={0.7} roughness={0.3} />
-    </mesh>
+    <group>
+      {[...Array(8)].map((_, i) => (
+        <mesh key={i} position={[0, (i / 7 - 0.5) * 1, 0]}>
+          <torusGeometry args={[0.2, 0.03, 8, 16]} />
+          <meshStandardMaterial color={color} metalness={0.7} roughness={0.3} />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
