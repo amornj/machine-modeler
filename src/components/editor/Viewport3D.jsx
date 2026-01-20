@@ -4,76 +4,50 @@ import { OrbitControls, TransformControls, Html } from '@react-three/drei';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
-// Transform gizmo for selected parts
-function TransformGizmo({ position, activeTool, onMove }) {
-  const groupRef = useRef();
-  const [dragging, setDragging] = useState(null);
-  const [startPos, setStartPos] = useState(null);
-  
-  if (activeTool === 'select') return null;
-  
-  return (
-    <group ref={groupRef} position={position}>
-      {activeTool === 'translate' && (
-        <>
-          {/* X axis */}
-          <mesh 
-            position={[0.5, 0, 0]}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              setDragging('x');
-              setStartPos(e.point.clone());
-            }}
-          >
-            <boxGeometry args={[1, 0.05, 0.05]} />
-            <meshBasicMaterial color="#ff4444" transparent opacity={0.8} />
-          </mesh>
-          <mesh position={[1, 0, 0]}>
-            <coneGeometry args={[0.1, 0.2, 8]} rotation={[0, 0, -Math.PI / 2]} />
-            <meshBasicMaterial color="#ff4444" />
-          </mesh>
-          
-          {/* Y axis */}
-          <mesh position={[0, 0.5, 0]}>
-            <boxGeometry args={[0.05, 1, 0.05]} />
-            <meshBasicMaterial color="#44ff44" transparent opacity={0.8} />
-          </mesh>
-          <mesh position={[0, 1, 0]} rotation={[0, 0, 0]}>
-            <coneGeometry args={[0.1, 0.2, 8]} />
-            <meshBasicMaterial color="#44ff44" />
-          </mesh>
-          
-          {/* Z axis */}
-          <mesh position={[0, 0, 0.5]}>
-            <boxGeometry args={[0.05, 0.05, 1]} />
-            <meshBasicMaterial color="#4444ff" transparent opacity={0.8} />
-          </mesh>
-          <mesh position={[0, 0, 1]} rotation={[Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[0.1, 0.2, 8]} />
-            <meshBasicMaterial color="#4444ff" />
-          </mesh>
-        </>
-      )}
-    </group>
-  );
-}
-
-// Individual part in the scene
-function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
+// Part with Transform Controls
+function TransformablePart({ part, isSelected, onSelect, activeTool, onUpdatePosition, orbitControlsRef }) {
   const meshRef = useRef();
+  const transformRef = useRef();
   const [hovered, setHovered] = useState(false);
-  
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.position.set(part.position.x, part.position.y, part.position.z);
-      meshRef.current.rotation.set(part.rotation.x, part.rotation.y, part.rotation.z);
-      meshRef.current.scale.set(part.scale.x, part.scale.y, part.scale.z);
+
+  useEffect(() => {
+    if (transformRef.current && orbitControlsRef.current) {
+      const controls = transformRef.current;
+      const orbitControls = orbitControlsRef.current;
+      
+      const onDragStart = () => {
+        orbitControls.enabled = false;
+      };
+      
+      const onDragEnd = () => {
+        orbitControls.enabled = true;
+        if (meshRef.current) {
+          onUpdatePosition({
+            x: meshRef.current.position.x,
+            y: meshRef.current.position.y,
+            z: meshRef.current.position.z
+          });
+        }
+      };
+      
+      controls.addEventListener('dragging-changed', (e) => {
+        if (e.value) onDragStart();
+        else onDragEnd();
+      });
     }
-  });
-  
+  }, [onUpdatePosition, orbitControlsRef]);
+
+  const mode = activeTool === 'select' ? 'translate' : 
+               activeTool === 'translate' ? 'translate' :
+               activeTool === 'rotate' ? 'rotate' :
+               activeTool === 'scale' ? 'scale' : 'translate';
+
   return (
     <group
       ref={meshRef}
+      position={[part.position.x, part.position.y, part.position.z]}
+      rotation={[part.rotation.x, part.rotation.y, part.rotation.z]}
+      scale={[part.scale.x, part.scale.y, part.scale.z]}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(part.id);
@@ -84,20 +58,22 @@ function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
         document.body.style.cursor = 'pointer';
       }}
       onPointerOut={(e) => {
+        e.stopPropagation();
         setHovered(false);
-        document.body.style.cursor = 'auto';
+        document.body.style.cursor = 'default';
       }}
     >
-      <PartMesh type={part.type} isSelected={isSelected} />
-      {(hovered || isSelected) && (
-        <mesh>
-          <sphereGeometry args={[0.8, 16, 16]} />
-          <meshBasicMaterial 
-            color={isSelected ? "#00d9ff" : "#ffffff"} 
-            transparent 
-            opacity={0.1} 
-          />
-        </mesh>
+      <PartMesh type={part.type} isSelected={isSelected || hovered} />
+      
+      {isSelected && (
+        <TransformControls
+          ref={transformRef}
+          mode={mode}
+          size={0.8}
+          showX={true}
+          showY={true}
+          showZ={true}
+        />
       )}
     </group>
   );
