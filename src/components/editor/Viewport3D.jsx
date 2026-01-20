@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect, Suspense } from 'react';
+import React, { useRef, useState, useEffect, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid as DreiGrid, Html } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
@@ -105,6 +105,15 @@ function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
 
 
 
+// Simple Grid Component
+function SimpleGrid() {
+  const gridHelper = useMemo(() => {
+    return new THREE.GridHelper(20, 40, '#2a2a4e', '#1a1a2e');
+  }, []);
+  
+  return <primitive object={gridHelper} />;
+}
+
 // Scene content
 function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpdatePart }) {
   return (
@@ -115,18 +124,7 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
       <directionalLight position={[-10, -10, -5]} intensity={0.3} />
       <pointLight position={[0, 5, 0]} intensity={0.5} />
       
-      {showGrid && (
-        <DreiGrid 
-          args={[20, 20]}
-          cellSize={0.5}
-          cellColor="#2a2a4e"
-          sectionSize={2}
-          sectionColor="#3a3a5e"
-          fadeDistance={30}
-          fadeStrength={1}
-          infiniteGrid
-        />
-      )}
+      {showGrid && <SimpleGrid />}
       
       {parts.map(part => (
         <Part
