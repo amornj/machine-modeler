@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Environment, PerspectiveCamera, Html } from '@react-three/drei';
+import { OrbitControls, Grid, Environment, Html } from '@react-three/drei';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
@@ -103,42 +103,19 @@ function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
   );
 }
 
-// Camera controller
-function CameraController() {
-  const { camera } = useThree();
-  
-  useEffect(() => {
-    camera.position.set(5, 5, 5);
-    camera.lookAt(0, 0, 0);
-  }, [camera]);
-  
-  return null;
-}
+
 
 // Scene content
 function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpdatePart }) {
   return (
     <>
-      <CameraController />
       <ambientLight intensity={0.4} />
       <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
       <directionalLight position={[-10, -10, -5]} intensity={0.3} />
       <pointLight position={[0, 5, 0]} intensity={0.5} />
       
       {showGrid && (
-        <Grid
-          args={[20, 20]}
-          cellSize={0.5}
-          cellThickness={0.5}
-          cellColor="#1a1a2e"
-          sectionSize={2}
-          sectionThickness={1}
-          sectionColor="#2a2a4e"
-          fadeDistance={30}
-          fadeStrength={1}
-          followCamera={false}
-          infiniteGrid={true}
-        />
+        <gridHelper args={[20, 40, '#2a2a4e', '#1a1a2e']} />
       )}
       
       {parts.map(part => (
@@ -196,6 +173,7 @@ export default function Viewport3D({
     <div className="w-full h-full bg-[#0a0a12]">
       <Canvas
         shadows
+        camera={{ position: [5, 5, 5], fov: 50 }}
         gl={{ antialias: true, alpha: false }}
         onPointerMissed={() => onSelectPart(null)}
       >
