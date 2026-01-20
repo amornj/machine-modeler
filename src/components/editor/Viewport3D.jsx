@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Html } from '@react-three/drei';
+import { OrbitControls, Grid as DreiGrid, Html } from '@react-three/drei';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
@@ -116,7 +116,16 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
       <pointLight position={[0, 5, 0]} intensity={0.5} />
       
       {showGrid && (
-        <gridHelper args={[20, 40, '#2a2a4e', '#1a1a2e']} />
+        <DreiGrid 
+          args={[20, 20]}
+          cellSize={0.5}
+          cellColor="#2a2a4e"
+          sectionSize={2}
+          sectionColor="#3a3a5e"
+          fadeDistance={30}
+          fadeStrength={1}
+          infiniteGrid
+        />
       )}
       
       {parts.map(part => (
