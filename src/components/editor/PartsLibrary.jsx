@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Cog, 
-  CircleDot, 
-  Cylinder, 
-  Zap, 
+import {
+  Cog,
+  CircleDot,
+  Cylinder,
+  Zap,
   Circle,
   Link2,
   ArrowUpDown,
@@ -12,26 +12,109 @@ import {
   Waves,
   Disc,
   Square,
-  Grip
+  Grip,
+  Settings,
+  CircleDashed,
+  RotateCcw,
+  Gauge,
+  Radio,
+  Cpu,
+  Wind,
+  Droplets,
+  Activity,
+  Box,
+  Boxes,
+  Package,
+  Hexagon,
+  CircleOff,
+  Hash,
+  Target,
+  Hand,
+  Move,
+  ArrowRight,
+  GitBranch,
+  Minus,
+  CornerDownRight,
+  Anchor,
+  Navigation,
+  Rotate3D,
+  PanelTop,
+  GripVertical,
+  Scissors,
+  MoveHorizontal,
+  Ruler,
+  SlidersHorizontal,
+  ArrowLeftRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const PARTS = [
-  { id: 'gear', name: 'Gear', icon: Cog, category: 'Transmission' },
+  // Transmission - Gears & Rotary
+  { id: 'gear', name: 'Spur Gear', icon: Cog, category: 'Transmission' },
+  { id: 'bevel-gear', name: 'Bevel Gear', icon: Settings, category: 'Transmission' },
+  { id: 'worm-gear', name: 'Worm Gear', icon: CircleDashed, category: 'Transmission' },
+  { id: 'rack', name: 'Gear Rack', icon: GripVertical, category: 'Transmission' },
+  { id: 'sprocket', name: 'Sprocket', icon: CircleDot, category: 'Transmission' },
   { id: 'shaft', name: 'Shaft', icon: Cylinder, category: 'Transmission' },
-  { id: 'bearing', name: 'Bearing', icon: CircleDot, category: 'Transmission' },
+  { id: 'bearing', name: 'Bearing', icon: RotateCcw, category: 'Transmission' },
   { id: 'pulley', name: 'Pulley', icon: Circle, category: 'Transmission' },
   { id: 'belt', name: 'Belt', icon: Link2, category: 'Transmission' },
+  { id: 'chain', name: 'Chain', icon: Link2, category: 'Transmission' },
   { id: 'coupler', name: 'Coupler', icon: Grip, category: 'Transmission' },
-  { id: 'motor', name: 'Motor', icon: Zap, category: 'Power' },
+  { id: 'flywheel', name: 'Flywheel', icon: Gauge, category: 'Transmission' },
+  { id: 'cam', name: 'Cam', icon: CircleOff, category: 'Transmission' },
+
+  // Power - Motors & Actuators
+  { id: 'motor', name: 'DC Motor', icon: Zap, category: 'Power' },
+  { id: 'servo-motor', name: 'Servo Motor', icon: Radio, category: 'Power' },
+  { id: 'stepper-motor', name: 'Stepper Motor', icon: Cpu, category: 'Power' },
   { id: 'piston', name: 'Piston', icon: ArrowUpDown, category: 'Power' },
+  { id: 'pneumatic-cylinder', name: 'Pneumatic Cyl', icon: Wind, category: 'Power' },
+  { id: 'hydraulic-cylinder', name: 'Hydraulic Cyl', icon: Droplets, category: 'Power' },
+
+  // Mechanical - Springs & Dampers
   { id: 'spring', name: 'Spring', icon: Waves, category: 'Mechanical' },
+  { id: 'damper', name: 'Damper', icon: Activity, category: 'Mechanical' },
+  { id: 'crankshaft', name: 'Crankshaft', icon: GitBranch, category: 'Mechanical' },
+
+  // Structure - Frames & Mounting
   { id: 'bracket', name: 'Bracket', icon: Wrench, category: 'Structure' },
   { id: 'plate', name: 'Plate', icon: Square, category: 'Structure' },
+  { id: 'beam', name: 'I-Beam', icon: Minus, category: 'Structure' },
+  { id: 'frame', name: 'Frame', icon: Box, category: 'Structure' },
+  { id: 'enclosure', name: 'Enclosure', icon: Package, category: 'Structure' },
+
+  // Fasteners
   { id: 'bolt', name: 'Bolt', icon: Disc, category: 'Fasteners' },
+  { id: 'nut', name: 'Nut', icon: Hexagon, category: 'Fasteners' },
+  { id: 'washer', name: 'Washer', icon: CircleDashed, category: 'Fasteners' },
+  { id: 'screw', name: 'Screw', icon: Hash, category: 'Fasteners' },
+  { id: 'rivet', name: 'Rivet', icon: Target, category: 'Fasteners' },
+
+  // Robotics - Arms & Joints
+  { id: 'arm-segment', name: 'Arm Segment', icon: Move, category: 'Robotics' },
+  { id: 'robotic-joint', name: 'Robotic Joint', icon: Rotate3D, category: 'Robotics' },
+  { id: 'gripper', name: 'Gripper', icon: Hand, category: 'Robotics' },
+  { id: 'end-effector', name: 'End Effector', icon: Scissors, category: 'Robotics' },
+  { id: 'robot-base', name: 'Robot Base', icon: PanelTop, category: 'Robotics' },
+
+  // Linear Motion
+  { id: 'linear-actuator', name: 'Linear Actuator', icon: ArrowRight, category: 'Linear Motion' },
+  { id: 'linear-rail', name: 'Linear Rail', icon: MoveHorizontal, category: 'Linear Motion' },
+  { id: 'lead-screw', name: 'Lead Screw', icon: Ruler, category: 'Linear Motion' },
+  { id: 'slider', name: 'Slider Block', icon: SlidersHorizontal, category: 'Linear Motion' },
+
+  // Linkages - Mechanical Connections
+  { id: 'connecting-rod', name: 'Connecting Rod', icon: Minus, category: 'Linkages' },
+  { id: 'lever', name: 'Lever', icon: CornerDownRight, category: 'Linkages' },
+  { id: 'rocker-arm', name: 'Rocker Arm', icon: ArrowLeftRight, category: 'Linkages' },
+  { id: 'linkage-bar', name: 'Linkage Bar', icon: Minus, category: 'Linkages' },
+  { id: 'ball-joint', name: 'Ball Joint', icon: CircleDot, category: 'Linkages' },
+  { id: 'universal-joint', name: 'U-Joint', icon: Navigation, category: 'Linkages' },
+  { id: 'hinge', name: 'Hinge', icon: Anchor, category: 'Linkages' },
 ];
 
-const CATEGORIES = ['Transmission', 'Power', 'Mechanical', 'Structure', 'Fasteners'];
+const CATEGORIES = ['Transmission', 'Power', 'Mechanical', 'Structure', 'Fasteners', 'Robotics', 'Linear Motion', 'Linkages'];
 
 export default function PartsLibrary({ onAddPart }) {
   return (
