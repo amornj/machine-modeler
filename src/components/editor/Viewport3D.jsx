@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Html } from '@react-three/drei';
+import { OrbitControls, TransformControls, Html } from '@react-three/drei';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
@@ -116,6 +116,8 @@ function SimpleGrid() {
 
 // Scene content
 function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpdatePart }) {
+  const orbitControlsRef = useRef();
+  
   return (
     <>
       <color attach="background" args={['#0a0a12']} />
@@ -127,24 +129,19 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
       {showGrid && <SimpleGrid />}
       
       {parts.map(part => (
-        <Part
+        <TransformablePart
           key={part.id}
           part={part}
           isSelected={selectedPart === part.id}
           onSelect={onSelectPart}
           activeTool={activeTool}
           onUpdatePosition={(pos) => onUpdatePart(part.id, { position: pos })}
+          orbitControlsRef={orbitControlsRef}
         />
       ))}
       
-      {selectedPart && (
-        <TransformGizmo
-          position={parts.find(p => p.id === selectedPart)?.position || { x: 0, y: 0, z: 0 }}
-          activeTool={activeTool}
-        />
-      )}
-      
       <OrbitControls 
+        ref={orbitControlsRef}
         makeDefault 
         enableDamping 
         dampingFactor={0.05}
