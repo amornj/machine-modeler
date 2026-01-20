@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Environment, Html } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
@@ -109,8 +109,9 @@ function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
 function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpdatePart }) {
   return (
     <>
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+      <color attach="background" args={['#0a0a12']} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[10, 10, 5]} intensity={1} />
       <directionalLight position={[-10, -10, -5]} intensity={0.3} />
       <pointLight position={[0, 5, 0]} intensity={0.5} />
       
@@ -143,8 +144,6 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
         minDistance={2}
         maxDistance={50}
       />
-      
-      <Environment preset="city" />
     </>
   );
 }
