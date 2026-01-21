@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-/**
- * A Roblox Studio-style draggable number input.
- * Click and drag on the label to change the value, or click the value to type directly.
- */
 export default function DraggableNumberInput({
   label,
   value,
@@ -16,81 +12,97 @@ export default function DraggableNumberInput({
   labelColor,
   className,
 }) {
-  // Safe defaults
   const safeValue = (typeof value === 'number' && !isNaN(value)) ? value : 0;
   const safeStep = step || 0.1;
   const safeSensitivity = sensitivity || 0.1;
   const safeLabelColor = labelColor || 'text-muted-foreground';
 
-  const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(String(safeValue));
-  const dragStartRef = useRef({ x: 0, startValue: 0 });
-  const inputRef = useRef(null);
+  const [dragging, setDragging] = useState(false);
 
-  // Format a number for display
+  const dragRef = useRef({
+    active: false,
+    startX: 0,
+    startValue: 0
+  });
+
+  const inputRef = useRef(null);
+  const onChangeRef = useRef(onChange);
+
+  // Keep onChange ref updated
+  useEffect(function() {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   function formatNumber(val) {
     if (typeof val !== 'number' || isNaN(val)) return '0';
     return String(Math.round(val * 1000) / 1000);
   }
 
-  // Clamp value to min/max bounds
   function clamp(val) {
-    let result = val;
+    var result = val;
     if (typeof min === 'number') result = Math.max(min, result);
     if (typeof max === 'number') result = Math.min(max, result);
     return result;
   }
 
-  // Sync input value when external value changes
-  useEffect(function syncValue() {
+  useEffect(function() {
     if (!isEditing) {
       setInputValue(formatNumber(safeValue));
     }
   }, [safeValue, isEditing]);
 
-  // Handle drag start on label
-  function handleMouseDown(e) {
-    e.preventDefault();
-    setIsDragging(true);
-    dragStartRef.current = { x: e.clientX, startValue: safeValue };
-    document.body.style.cursor = 'ew-resize';
-    document.body.style.userSelect = 'none';
-  }
+  // Global mouse event handlers
+  useEffect(function() {
+    function handleGlobalMouseMove(e) {
+      if (!dragRef.current.active) return;
 
-  // Handle drag movement
-  useEffect(function handleDrag() {
-    if (!isDragging) return;
-
-    function onMouseMove(e) {
-      var delta = e.clientX - dragStartRef.current.x;
+      var delta = e.clientX - dragRef.current.startX;
       var sens = safeSensitivity;
       if (e.shiftKey) sens = sens * 0.1;
       if (e.ctrlKey || e.metaKey) sens = sens * 10;
 
-      var newVal = dragStartRef.current.startValue + delta * sens;
+      var newVal = dragRef.current.startValue + delta * sens;
       var snapped = Math.round(newVal / safeStep) * safeStep;
       var clamped = clamp(snapped);
 
-      onChange(clamped);
+      if (onChangeRef.current) {
+        onChangeRef.current(clamped);
+      }
     }
 
-    function onMouseUp() {
-      setIsDragging(false);
+    function handleGlobalMouseUp() {
+      if (!dragRef.current.active) return;
+
+      dragRef.current.active = false;
+      setDragging(false);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     }
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
 
-    return function cleanup() {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+    return function() {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [isDragging, safeSensitivity, safeStep, onChange, min, max]);
+  }, [safeSensitivity, safeStep, min, max]);
 
-  // Click on value to edit
+  function handleLabelMouseDown(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    dragRef.current.active = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startValue = safeValue;
+
+    setDragging(true);
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+  }
+
   function handleValueClick() {
     setIsEditing(true);
     setInputValue(formatNumber(safeValue));
@@ -126,12 +138,12 @@ export default function DraggableNumberInput({
     <div className={cn("flex items-center gap-1", className)}>
       <button
         type="button"
-        onMouseDown={handleMouseDown}
+        onMouseDown={handleLabelMouseDown}
         className={cn(
           "w-6 h-7 flex items-center justify-center rounded text-xs font-bold select-none transition-all",
           "bg-muted/50 hover:bg-muted cursor-ew-resize",
           "border border-transparent hover:border-border",
-          isDragging && "bg-muted border-border ring-1 ring-ring/20",
+          dragging && "bg-muted border-border ring-1 ring-ring/20",
           safeLabelColor
         )}
         title={"Drag to adjust " + label}
