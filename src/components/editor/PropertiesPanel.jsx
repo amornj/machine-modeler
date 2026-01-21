@@ -1,9 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { cn } from '@/lib/utils';
+import DraggableNumberInput from '@/components/ui/DraggableNumberInput';
 
 export default function PropertiesPanel({ selectedPart, parts, onUpdatePart }) {
   const part = parts.find(p => p.id === selectedPart);
@@ -27,19 +25,19 @@ export default function PropertiesPanel({ selectedPart, parts, onUpdatePart }) {
 
   const handlePositionChange = (axis, value) => {
     onUpdatePart(part.id, {
-      position: { ...part.position, [axis]: parseFloat(value) || 0 }
+      position: { ...part.position, [axis]: value }
     });
   };
 
   const handleRotationChange = (axis, value) => {
     onUpdatePart(part.id, {
-      rotation: { ...part.rotation, [axis]: parseFloat(value) || 0 }
+      rotation: { ...part.rotation, [axis]: value }
     });
   };
 
   const handleScaleChange = (axis, value) => {
     onUpdatePart(part.id, {
-      scale: { ...part.scale, [axis]: parseFloat(value) || 1 }
+      scale: { ...part.scale, [axis]: value }
     });
   };
 
@@ -67,74 +65,62 @@ export default function PropertiesPanel({ selectedPart, parts, onUpdatePart }) {
         </div>
 
         {/* Position */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Label className="text-xs text-muted-foreground uppercase tracking-wider">Position</Label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-1">
             {['x', 'y', 'z'].map(axis => (
-              <div key={axis} className="space-y-1">
-                <Label className={cn(
-                  "text-xs font-medium",
+              <DraggableNumberInput
+                key={axis}
+                label={axis.toUpperCase()}
+                value={part.position[axis]}
+                onChange={(val) => handlePositionChange(axis, val)}
+                step={0.1}
+                sensitivity={0.05}
+                labelColor={
                   axis === 'x' ? "text-red-500" : axis === 'y' ? "text-green-500" : "text-blue-500"
-                )}>
-                  {axis.toUpperCase()}
-                </Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={part.position[axis]}
-                  onChange={(e) => handlePositionChange(axis, e.target.value)}
-                  className="bg-muted border-border text-foreground h-8 text-sm"
-                />
-              </div>
+                }
+              />
             ))}
           </div>
         </div>
 
         {/* Rotation */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Label className="text-xs text-muted-foreground uppercase tracking-wider">Rotation (degrees)</Label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-1">
             {['x', 'y', 'z'].map(axis => (
-              <div key={axis} className="space-y-1">
-                <Label className={cn(
-                  "text-xs font-medium",
+              <DraggableNumberInput
+                key={axis}
+                label={axis.toUpperCase()}
+                value={Math.round(part.rotation[axis] * (180 / Math.PI))}
+                onChange={(val) => handleRotationChange(axis, val * (Math.PI / 180))}
+                step={5}
+                sensitivity={0.5}
+                labelColor={
                   axis === 'x' ? "text-red-500" : axis === 'y' ? "text-green-500" : "text-blue-500"
-                )}>
-                  {axis.toUpperCase()}
-                </Label>
-                <Input
-                  type="number"
-                  step="15"
-                  value={Math.round(part.rotation[axis] * (180 / Math.PI))}
-                  onChange={(e) => handleRotationChange(axis, parseFloat(e.target.value) * (Math.PI / 180))}
-                  className="bg-muted border-border text-foreground h-8 text-sm"
-                />
-              </div>
+                }
+              />
             ))}
           </div>
         </div>
 
         {/* Scale */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Label className="text-xs text-muted-foreground uppercase tracking-wider">Scale</Label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-1">
             {['x', 'y', 'z'].map(axis => (
-              <div key={axis} className="space-y-1">
-                <Label className={cn(
-                  "text-xs font-medium",
+              <DraggableNumberInput
+                key={axis}
+                label={axis.toUpperCase()}
+                value={part.scale[axis]}
+                onChange={(val) => handleScaleChange(axis, val)}
+                step={0.1}
+                min={0.1}
+                sensitivity={0.02}
+                labelColor={
                   axis === 'x' ? "text-red-500" : axis === 'y' ? "text-green-500" : "text-blue-500"
-                )}>
-                  {axis.toUpperCase()}
-                </Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="0.1"
-                  value={part.scale[axis]}
-                  onChange={(e) => handleScaleChange(axis, e.target.value)}
-                  className="bg-muted border-border text-foreground h-8 text-sm"
-                />
-              </div>
+                }
+              />
             ))}
           </div>
         </div>
