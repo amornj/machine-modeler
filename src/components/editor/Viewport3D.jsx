@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, TransformControls, Html } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import { useTheme } from 'next-themes';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
@@ -79,14 +79,13 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
       {showGrid && <SimpleGrid isDark={isDark} />}
 
       {parts.map(part => (
-        <TransformablePart
+        <Part
           key={part.id}
           part={part}
           isSelected={selectedPart === part.id}
           onSelect={onSelectPart}
           activeTool={activeTool}
           onUpdatePosition={(pos) => onUpdatePart(part.id, { position: pos })}
-          orbitControlsRef={orbitControlsRef}
         />
       ))}
 
