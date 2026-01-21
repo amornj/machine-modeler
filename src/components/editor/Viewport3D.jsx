@@ -5,54 +5,47 @@ import { useTheme } from 'next-themes';
 import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
-// Part with Transform Controls
-function TransformablePart({ part, isSelected, onSelect, activeTool, onUpdatePosition, orbitControlsRef }) {
+// Part component
+function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
   const meshRef = useRef();
   const [hovered, setHovered] = useState(false);
-
-  const mode = activeTool === 'select' ? 'translate' : 
-               activeTool === 'translate' ? 'translate' :
-               activeTool === 'rotate' ? 'rotate' :
-               activeTool === 'scale' ? 'scale' : 'translate';
-
+  
+  useFrame(() => {
+    if (meshRef.current) {
+      meshRef.current.position.set(part.position.x, part.position.y, part.position.z);
+      meshRef.current.rotation.set(part.rotation.x, part.rotation.y, part.rotation.z);
+      meshRef.current.scale.set(part.scale.x, part.scale.y, part.scale.z);
+    }
+  });
+  
   return (
-    <group>
-      <TransformControls
-        mode={isSelected ? mode : 'translate'}
-        enabled={isSelected}
-        onObjectChange={() => {
-          if (meshRef.current) {
-            onUpdatePosition({
-              x: meshRef.current.position.x,
-              y: meshRef.current.position.y,
-              z: meshRef.current.position.z
-            });
-          }
-        }}
-      >
-        <group
-          ref={meshRef}
-          position={[part.position.x, part.position.y, part.position.z]}
-          rotation={[part.rotation.x, part.rotation.y, part.rotation.z]}
-          scale={[part.scale.x, part.scale.y, part.scale.z]}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(part.id);
-          }}
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            setHovered(true);
-            document.body.style.cursor = 'pointer';
-          }}
-          onPointerOut={(e) => {
-            e.stopPropagation();
-            setHovered(false);
-            document.body.style.cursor = 'default';
-          }}
-        >
-          <PartMesh type={part.type} isSelected={isSelected || hovered} />
-        </group>
-      </TransformControls>
+    <group
+      ref={meshRef}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(part.id);
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(e) => {
+        setHovered(false);
+        document.body.style.cursor = 'auto';
+      }}
+    >
+      <PartMesh type={part.type} isSelected={isSelected || hovered} />
+      {(hovered || isSelected) && (
+        <mesh>
+          <sphereGeometry args={[0.8, 16, 16]} />
+          <meshBasicMaterial 
+            color={isSelected ? "#00d9ff" : "#ffffff"} 
+            transparent 
+            opacity={0.1} 
+          />
+        </mesh>
+      )}
     </group>
   );
 }
