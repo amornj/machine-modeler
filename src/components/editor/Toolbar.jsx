@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Move, 
-  RotateCcw, 
-  Maximize2, 
+import { useTheme } from 'next-themes';
+import {
+  Move,
+  RotateCcw,
+  Maximize2,
   MousePointer2,
   Grid3X3,
   Magnet,
@@ -12,7 +13,9 @@ import {
   Save,
   FolderOpen,
   Plus,
-  Download
+  Download,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -31,10 +34,10 @@ const TRANSFORM_TOOLS = [
   { id: 'scale', icon: Maximize2, label: 'Scale (S)' },
 ];
 
-export default function Toolbar({ 
-  activeTool, 
-  onToolChange, 
-  showGrid, 
+export default function Toolbar({
+  activeTool,
+  onToolChange,
+  showGrid,
   onToggleGrid,
   snapEnabled,
   onToggleSnap,
@@ -47,9 +50,15 @@ export default function Toolbar({
   onUndo,
   onRedo
 }) {
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex items-center gap-2 p-2 bg-[#0d0d14]/90 backdrop-blur-xl border-b border-white/5">
+      <div className="flex items-center gap-2 p-2 bg-card/90 backdrop-blur-xl border-b border-border">
         {/* File Operations */}
         <div className="flex items-center gap-1">
           <Tooltip>
@@ -57,7 +66,7 @@ export default function Toolbar({
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10"
+                className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
                 onClick={onNew}
               >
                 <Plus className="w-4 h-4" />
@@ -65,13 +74,13 @@ export default function Toolbar({
             </TooltipTrigger>
             <TooltipContent>New Project</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10"
+                className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
                 onClick={onLoad}
               >
                 <FolderOpen className="w-4 h-4" />
@@ -79,13 +88,13 @@ export default function Toolbar({
             </TooltipTrigger>
             <TooltipContent>Open Project</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10"
+                className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
                 onClick={onSave}
               >
                 <Save className="w-4 h-4" />
@@ -99,7 +108,7 @@ export default function Toolbar({
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10"
+                className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
                 onClick={onExport}
               >
                 <Download className="w-4 h-4" />
@@ -108,9 +117,9 @@ export default function Toolbar({
             <TooltipContent>Export</TooltipContent>
           </Tooltip>
         </div>
-        
-        <Separator orientation="vertical" className="h-6 bg-white/10" />
-        
+
+        <Separator orientation="vertical" className="h-6 bg-border" />
+
         {/* Undo/Redo */}
         <div className="flex items-center gap-1">
           <Tooltip>
@@ -120,9 +129,9 @@ export default function Toolbar({
                 variant="ghost"
                 className={cn(
                   "h-9 w-9",
-                  canUndo 
-                    ? "text-white/60 hover:text-white hover:bg-white/10" 
-                    : "text-white/20 cursor-not-allowed"
+                  canUndo
+                    ? "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-muted-foreground/30 cursor-not-allowed"
                 )}
                 onClick={onUndo}
                 disabled={!canUndo}
@@ -132,7 +141,7 @@ export default function Toolbar({
             </TooltipTrigger>
             <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -140,9 +149,9 @@ export default function Toolbar({
                 variant="ghost"
                 className={cn(
                   "h-9 w-9",
-                  canRedo 
-                    ? "text-white/60 hover:text-white hover:bg-white/10" 
-                    : "text-white/20 cursor-not-allowed"
+                  canRedo
+                    ? "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-muted-foreground/30 cursor-not-allowed"
                 )}
                 onClick={onRedo}
                 disabled={!canRedo}
@@ -153,11 +162,11 @@ export default function Toolbar({
             <TooltipContent>Redo (Ctrl+Y)</TooltipContent>
           </Tooltip>
         </div>
-        
-        <Separator orientation="vertical" className="h-6 bg-white/10" />
-        
+
+        <Separator orientation="vertical" className="h-6 bg-border" />
+
         {/* Transform Tools */}
-        <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
           {TRANSFORM_TOOLS.map(tool => (
             <Tooltip key={tool.id}>
               <TooltipTrigger asChild>
@@ -166,9 +175,9 @@ export default function Toolbar({
                   onClick={() => onToolChange(tool.id)}
                   className={cn(
                     "h-8 w-8 rounded-md flex items-center justify-center transition-all",
-                    activeTool === tool.id 
-                      ? "bg-cyan-500/20 text-cyan-400" 
-                      : "text-white/50 hover:text-white hover:bg-white/10"
+                    activeTool === tool.id
+                      ? "bg-cyan-500/20 text-cyan-500"
+                      : "text-muted-foreground hover:text-foreground hover:bg-background"
                   )}
                 >
                   <tool.icon className="w-4 h-4" />
@@ -178,9 +187,9 @@ export default function Toolbar({
             </Tooltip>
           ))}
         </div>
-        
-        <Separator orientation="vertical" className="h-6 bg-white/10" />
-        
+
+        <Separator orientation="vertical" className="h-6 bg-border" />
+
         {/* View Options */}
         <div className="flex items-center gap-1">
           <Tooltip>
@@ -190,9 +199,9 @@ export default function Toolbar({
                 variant="ghost"
                 className={cn(
                   "h-9 w-9",
-                  showGrid 
-                    ? "bg-cyan-500/20 text-cyan-400" 
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                  showGrid
+                    ? "bg-cyan-500/20 text-cyan-500"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 onClick={onToggleGrid}
               >
@@ -201,7 +210,7 @@ export default function Toolbar({
             </TooltipTrigger>
             <TooltipContent>Toggle Grid</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -209,9 +218,9 @@ export default function Toolbar({
                 variant="ghost"
                 className={cn(
                   "h-9 w-9",
-                  snapEnabled 
-                    ? "bg-cyan-500/20 text-cyan-400" 
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                  snapEnabled
+                    ? "bg-cyan-500/20 text-cyan-500"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 onClick={onToggleSnap}
               >
@@ -221,6 +230,30 @@ export default function Toolbar({
             <TooltipContent>Snap to Grid</TooltipContent>
           </Tooltip>
         </div>
+
+        {/* Spacer to push theme toggle to the right */}
+        <div className="flex-1" />
+
+        {/* Theme Toggle */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </TooltipContent>
+        </Tooltip>
       </div>
     </TooltipProvider>
   );

@@ -261,7 +261,7 @@ export default function Editor() {
   }, [selectedPart, handleDeletePart, handleUndo, handleRedo]);
   
   return (
-    <div className="h-screen w-screen bg-[#0a0a12] flex flex-col overflow-hidden">
+    <div className="h-screen w-screen bg-background flex flex-col overflow-hidden">
       {/* Toolbar */}
       <Toolbar
         activeTool={activeTool}
@@ -279,18 +279,18 @@ export default function Editor() {
         onUndo={handleUndo}
         onRedo={handleRedo}
       />
-      
+
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left sidebar - Parts Library */}
         <motion.aside
           initial={{ x: -300 }}
           animate={{ x: 0 }}
-          className="w-64 bg-[#0d0d14]/95 backdrop-blur-xl border-r border-white/5 flex flex-col"
+          className="w-64 bg-card/95 backdrop-blur-xl border-r border-border flex flex-col"
         >
           <PartsLibrary onAddPart={handleAddPart} />
         </motion.aside>
-        
+
         {/* Center - 3D Viewport */}
         <div className="flex-1 relative">
           <Viewport3D
@@ -301,21 +301,21 @@ export default function Editor() {
             showGrid={showGrid}
             onUpdatePart={handleUpdatePart}
           />
-          
+
           {/* Project name overlay */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10">
-            <span className="text-sm font-medium text-white/80">{projectName}</span>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-background/50 backdrop-blur-md rounded-full border border-border">
+            <span className="text-sm font-medium text-foreground/80">{projectName}</span>
           </div>
         </div>
-        
+
         {/* Right sidebar - Parts List & Properties */}
         <motion.aside
           initial={{ x: 300 }}
           animate={{ x: 0 }}
-          className="w-72 bg-[#0d0d14]/95 backdrop-blur-xl border-l border-white/5 flex flex-col"
+          className="w-72 bg-card/95 backdrop-blur-xl border-l border-border flex flex-col"
         >
           {/* Parts List */}
-          <div className="h-1/2 border-b border-white/5">
+          <div className="h-1/2 border-b border-border">
             <PartsList
               parts={parts}
               selectedPart={selectedPart}
@@ -324,7 +324,7 @@ export default function Editor() {
               onDuplicatePart={handleDuplicatePart}
             />
           </div>
-          
+
           {/* Properties Panel */}
           <div className="h-1/2">
             <PropertiesPanel
