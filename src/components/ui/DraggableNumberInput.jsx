@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -11,114 +11,119 @@ export default function DraggableNumberInput({
   onChange,
   min,
   max,
-  step = 0.1,
-  sensitivity = 0.1,
-  labelColor = 'text-muted-foreground',
+  step,
+  sensitivity,
+  labelColor,
   className,
 }) {
+  // Safe defaults
+  const safeValue = (typeof value === 'number' && !isNaN(value)) ? value : 0;
+  const safeStep = step || 0.1;
+  const safeSensitivity = sensitivity || 0.1;
+  const safeLabelColor = labelColor || 'text-muted-foreground';
+
   const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [inputValue, setInputValue] = useState(value.toString());
-  const dragStartRef = useRef({ x: 0, value: 0 });
+  const [inputValue, setInputValue] = useState(String(safeValue));
+  const dragStartRef = useRef({ x: 0, startValue: 0 });
   const inputRef = useRef(null);
 
-  // Update input value when external value changes (and not editing)
-  useEffect(() => {
+  // Format a number for display
+  function formatNumber(val) {
+    if (typeof val !== 'number' || isNaN(val)) return '0';
+    return String(Math.round(val * 1000) / 1000);
+  }
+
+  // Clamp value to min/max bounds
+  function clamp(val) {
+    let result = val;
+    if (typeof min === 'number') result = Math.max(min, result);
+    if (typeof max === 'number') result = Math.min(max, result);
+    return result;
+  }
+
+  // Sync input value when external value changes
+  useEffect(function syncValue() {
     if (!isEditing) {
-      setInputValue(formatValue(value));
+      setInputValue(formatNumber(safeValue));
     }
-  }, [value, isEditing]);
+  }, [safeValue, isEditing]);
 
-  const formatValue = (val) => {
-    // Round to avoid floating point issues
-    const rounded = Math.round(val * 1000) / 1000;
-    return rounded.toString();
-  };
-
-  const clampValue = (val) => {
-    let clamped = val;
-    if (min !== undefined) clamped = Math.max(min, clamped);
-    if (max !== undefined) clamped = Math.min(max, clamped);
-    return clamped;
-  };
-
-  const handleMouseDown = useCallback((e) => {
+  // Handle drag start on label
+  function handleMouseDown(e) {
     e.preventDefault();
     setIsDragging(true);
-    dragStartRef.current = { x: e.clientX, value };
+    dragStartRef.current = { x: e.clientX, startValue: safeValue };
     document.body.style.cursor = 'ew-resize';
     document.body.style.userSelect = 'none';
-  }, [value]);
+  }
 
-  const handleMouseMove = useCallback((e) => {
+  // Handle drag movement
+  useEffect(function handleDrag() {
     if (!isDragging) return;
 
-    const delta = e.clientX - dragStartRef.current.x;
-    // Use shift for fine control, ctrl/cmd for coarse control
-    let effectiveSensitivity = sensitivity;
-    if (e.shiftKey) effectiveSensitivity *= 0.1;
-    if (e.ctrlKey || e.metaKey) effectiveSensitivity *= 10;
+    function onMouseMove(e) {
+      var delta = e.clientX - dragStartRef.current.x;
+      var sens = safeSensitivity;
+      if (e.shiftKey) sens = sens * 0.1;
+      if (e.ctrlKey || e.metaKey) sens = sens * 10;
 
-    const newValue = dragStartRef.current.value + delta * effectiveSensitivity;
+      var newVal = dragStartRef.current.startValue + delta * sens;
+      var snapped = Math.round(newVal / safeStep) * safeStep;
+      var clamped = clamp(snapped);
 
-    // Snap to step
-    const snapped = Math.round(newValue / step) * step;
-    const clamped = clampValue(snapped);
-
-    onChange(clamped);
-  }, [isDragging, sensitivity, step, onChange, min, max]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-  }, []);
-
-  // Add global mouse event listeners when dragging
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
-
-  const handleValueClick = () => {
-    setIsEditing(true);
-    setInputValue(formatValue(value));
-    setTimeout(() => {
-      inputRef.current?.select();
-    }, 0);
-  };
-
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleInputBlur = () => {
-    setIsEditing(false);
-    const parsed = parseFloat(inputValue);
-    if (!isNaN(parsed)) {
-      const clamped = clampValue(parsed);
       onChange(clamped);
     }
-  };
 
-  const handleInputKeyDown = (e) => {
+    function onMouseUp() {
+      setIsDragging(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    return function cleanup() {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [isDragging, safeSensitivity, safeStep, onChange, min, max]);
+
+  // Click on value to edit
+  function handleValueClick() {
+    setIsEditing(true);
+    setInputValue(formatNumber(safeValue));
+    setTimeout(function() {
+      if (inputRef.current) {
+        inputRef.current.select();
+      }
+    }, 0);
+  }
+
+  function handleInputChange(e) {
+    setInputValue(e.target.value);
+  }
+
+  function handleInputBlur() {
+    setIsEditing(false);
+    var parsed = parseFloat(inputValue);
+    if (!isNaN(parsed)) {
+      onChange(clamp(parsed));
+    }
+  }
+
+  function handleInputKeyDown(e) {
     if (e.key === 'Enter') {
       e.target.blur();
     } else if (e.key === 'Escape') {
       setIsEditing(false);
-      setInputValue(formatValue(value));
+      setInputValue(formatNumber(safeValue));
     }
-  };
+  }
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      {/* Draggable Label */}
       <button
         type="button"
         onMouseDown={handleMouseDown}
@@ -127,14 +132,13 @@ export default function DraggableNumberInput({
           "bg-muted/50 hover:bg-muted cursor-ew-resize",
           "border border-transparent hover:border-border",
           isDragging && "bg-muted border-border ring-1 ring-ring/20",
-          labelColor
+          safeLabelColor
         )}
-        title={`Drag to adjust ${label}`}
+        title={"Drag to adjust " + label}
       >
         {label}
       </button>
 
-      {/* Value Display / Input */}
       {isEditing ? (
         <input
           ref={inputRef}
@@ -143,7 +147,7 @@ export default function DraggableNumberInput({
           onChange={handleInputChange}
           onBlur={handleInputBlur}
           onKeyDown={handleInputKeyDown}
-          step={step}
+          step={safeStep}
           min={min}
           max={max}
           className={cn(
@@ -164,7 +168,7 @@ export default function DraggableNumberInput({
           )}
           title="Click to edit"
         >
-          {formatValue(value)}
+          {formatNumber(safeValue)}
         </button>
       )}
     </div>
