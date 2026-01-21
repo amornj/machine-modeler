@@ -138,7 +138,8 @@ export default function Editor() {
       p.id === id ? { ...p, ...updates } : p
     );
     setParts(newParts);
-  }, [parts]);
+    addToHistory(newParts);
+  }, [parts, addToHistory]);
   
   // Delete part
   const handleDeletePart = useCallback((id) => {
