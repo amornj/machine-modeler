@@ -6,21 +6,14 @@ import { PartMesh } from './PartMeshes';
 import * as THREE from 'three';
 
 // Part component
-function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
-  const meshRef = useRef();
+function Part({ part, isSelected, onSelect }) {
   const [hovered, setHovered] = useState(false);
-  
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.position.set(part.position.x, part.position.y, part.position.z);
-      meshRef.current.rotation.set(part.rotation.x, part.rotation.y, part.rotation.z);
-      meshRef.current.scale.set(part.scale.x, part.scale.y, part.scale.z);
-    }
-  });
   
   return (
     <group
-      ref={meshRef}
+      position={[part.position.x, part.position.y, part.position.z]}
+      rotation={[part.rotation.x, part.rotation.y, part.rotation.z]}
+      scale={[part.scale.x, part.scale.y, part.scale.z]}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(part.id);
@@ -30,7 +23,7 @@ function Part({ part, isSelected, onSelect, activeTool, onUpdatePosition }) {
         setHovered(true);
         document.body.style.cursor = 'pointer';
       }}
-      onPointerOut={(e) => {
+      onPointerOut={() => {
         setHovered(false);
         document.body.style.cursor = 'auto';
       }}
@@ -84,8 +77,6 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
           part={part}
           isSelected={selectedPart === part.id}
           onSelect={onSelectPart}
-          activeTool={activeTool}
-          onUpdatePosition={(pos) => onUpdatePart(part.id, { position: pos })}
         />
       ))}
 
