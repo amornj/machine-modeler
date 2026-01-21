@@ -119,20 +119,20 @@ const CATEGORIES = ['Transmission', 'Power', 'Mechanical', 'Structure', 'Fastene
 export default function PartsLibrary({ onAddPart }) {
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-white/5">
-        <h2 className="text-sm font-semibold text-white/90 uppercase tracking-wider">
+      <div className="p-4 border-b border-border">
+        <h2 className="text-sm font-semibold text-foreground/90 uppercase tracking-wider">
           Parts Library
         </h2>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
         {CATEGORIES.map(category => {
           const categoryParts = PARTS.filter(p => p.category === category);
           if (categoryParts.length === 0) return null;
-          
+
           return (
             <div key={category}>
-              <h3 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2 px-1">
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-1">
                 {category}
               </h3>
               <div className="grid grid-cols-2 gap-2">
@@ -144,14 +144,14 @@ export default function PartsLibrary({ onAddPart }) {
                     onClick={() => onAddPart(part.id)}
                     className={cn(
                       "flex flex-col items-center gap-2 p-3 rounded-xl",
-                      "bg-white/5 hover:bg-white/10 border border-white/5 hover:border-cyan-500/30",
+                      "bg-muted/50 hover:bg-muted border border-border hover:border-cyan-500/30",
                       "transition-all duration-200 group"
                     )}
                   >
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center group-hover:from-cyan-500/30 group-hover:to-blue-500/30 transition-all">
-                      <part.icon className="w-5 h-5 text-cyan-400" />
+                      <part.icon className="w-5 h-5 text-cyan-500" />
                     </div>
-                    <span className="text-xs font-medium text-white/70 group-hover:text-white/90">
+                    <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
                       {part.name}
                     </span>
                   </motion.button>
