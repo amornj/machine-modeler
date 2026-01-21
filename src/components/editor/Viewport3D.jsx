@@ -8,35 +8,7 @@ import * as THREE from 'three';
 // Part with Transform Controls
 function TransformablePart({ part, isSelected, onSelect, activeTool, onUpdatePosition, orbitControlsRef }) {
   const meshRef = useRef();
-  const transformRef = useRef();
   const [hovered, setHovered] = useState(false);
-
-  useEffect(() => {
-    if (transformRef.current && orbitControlsRef.current) {
-      const controls = transformRef.current;
-      const orbitControls = orbitControlsRef.current;
-      
-      const onDragStart = () => {
-        orbitControls.enabled = false;
-      };
-      
-      const onDragEnd = () => {
-        orbitControls.enabled = true;
-        if (meshRef.current) {
-          onUpdatePosition({
-            x: meshRef.current.position.x,
-            y: meshRef.current.position.y,
-            z: meshRef.current.position.z
-          });
-        }
-      };
-      
-      controls.addEventListener('dragging-changed', (e) => {
-        if (e.value) onDragStart();
-        else onDragEnd();
-      });
-    }
-  }, [onUpdatePosition, orbitControlsRef]);
 
   const mode = activeTool === 'select' ? 'translate' : 
                activeTool === 'translate' ? 'translate' :
@@ -44,38 +16,43 @@ function TransformablePart({ part, isSelected, onSelect, activeTool, onUpdatePos
                activeTool === 'scale' ? 'scale' : 'translate';
 
   return (
-    <group
-      ref={meshRef}
-      position={[part.position.x, part.position.y, part.position.z]}
-      rotation={[part.rotation.x, part.rotation.y, part.rotation.z]}
-      scale={[part.scale.x, part.scale.y, part.scale.z]}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect(part.id);
-      }}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-        document.body.style.cursor = 'pointer';
-      }}
-      onPointerOut={(e) => {
-        e.stopPropagation();
-        setHovered(false);
-        document.body.style.cursor = 'default';
-      }}
-    >
-      <PartMesh type={part.type} isSelected={isSelected || hovered} />
-      
-      {isSelected && (
-        <TransformControls
-          ref={transformRef}
-          mode={mode}
-          size={0.8}
-          showX={true}
-          showY={true}
-          showZ={true}
-        />
-      )}
+    <group>
+      <TransformControls
+        mode={isSelected ? mode : 'translate'}
+        enabled={isSelected}
+        onObjectChange={() => {
+          if (meshRef.current) {
+            onUpdatePosition({
+              x: meshRef.current.position.x,
+              y: meshRef.current.position.y,
+              z: meshRef.current.position.z
+            });
+          }
+        }}
+      >
+        <group
+          ref={meshRef}
+          position={[part.position.x, part.position.y, part.position.z]}
+          rotation={[part.rotation.x, part.rotation.y, part.rotation.z]}
+          scale={[part.scale.x, part.scale.y, part.scale.z]}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(part.id);
+          }}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            setHovered(true);
+            document.body.style.cursor = 'pointer';
+          }}
+          onPointerOut={(e) => {
+            e.stopPropagation();
+            setHovered(false);
+            document.body.style.cursor = 'default';
+          }}
+        >
+          <PartMesh type={part.type} isSelected={isSelected || hovered} />
+        </group>
+      </TransformControls>
     </group>
   );
 }
