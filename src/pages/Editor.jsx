@@ -132,13 +132,20 @@ export default function Editor() {
     toast.success(`Added ${PART_NAMES[type]}`);
   }, [parts, addToHistory]);
   
-  // Update part
-  const handleUpdatePart = useCallback((id, updates) => {
-    const newParts = parts.map(p => 
+  // Update part (skipHistory for real-time dragging, call with addToHistory=true when drag ends)
+  const handleUpdatePart = useCallback((id, updates, skipHistory = false) => {
+    const newParts = parts.map(p =>
       p.id === id ? { ...p, ...updates } : p
     );
     setParts(newParts);
-    addToHistory(newParts);
+    if (!skipHistory) {
+      addToHistory(newParts);
+    }
+  }, [parts, addToHistory]);
+
+  // Commit current state to history (call when dragging ends)
+  const handleCommitHistory = useCallback(() => {
+    addToHistory(parts);
   }, [parts, addToHistory]);
   
   // Delete part
@@ -301,6 +308,7 @@ export default function Editor() {
             activeTool={activeTool}
             showGrid={showGrid}
             onUpdatePart={handleUpdatePart}
+            onCommitHistory={handleCommitHistory}
           />
 
           {/* Project name overlay */}

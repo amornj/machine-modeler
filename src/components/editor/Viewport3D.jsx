@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import { useTheme } from 'next-themes';
 import { PartMesh } from './PartMeshes';
+import TransformGizmo from './TransformGizmo';
 import * as THREE from 'three';
 
 // Part component
@@ -57,9 +58,28 @@ function SimpleGrid({ isDark }) {
 }
 
 // Scene content
-function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpdatePart, isDark }) {
+function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpdatePart, onCommitHistory, isDark }) {
   const orbitControlsRef = useRef();
+  const [isDragging, setIsDragging] = useState(false);
   const backgroundColor = isDark ? '#0a0a12' : '#f5f5f5';
+
+  // Get the selected part object
+  const selectedPartObj = parts.find(p => p.id === selectedPart);
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    // Commit to history when drag ends
+    onCommitHistory?.();
+  };
+
+  // Wrapper for update that skips history during drag
+  const handleGizmoUpdate = (id, updates) => {
+    onUpdatePart(id, updates, true); // skipHistory = true during drag
+  };
 
   return (
     <>
@@ -80,6 +100,17 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
         />
       ))}
 
+      {/* Transform Gizmo for selected part */}
+      {selectedPartObj && (
+        <TransformGizmo
+          part={selectedPartObj}
+          activeTool={activeTool}
+          onUpdatePart={handleGizmoUpdate}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        />
+      )}
+
       <OrbitControls
         ref={orbitControlsRef}
         makeDefault
@@ -87,6 +118,7 @@ function Scene({ parts, selectedPart, onSelectPart, activeTool, showGrid, onUpda
         dampingFactor={0.05}
         minDistance={2}
         maxDistance={50}
+        enabled={!isDragging}
       />
     </>
   );
@@ -110,7 +142,8 @@ export default function Viewport3D({
   onSelectPart,
   activeTool,
   showGrid,
-  onUpdatePart
+  onUpdatePart,
+  onCommitHistory
 }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -131,6 +164,7 @@ export default function Viewport3D({
             activeTool={activeTool}
             showGrid={showGrid}
             onUpdatePart={onUpdatePart}
+            onCommitHistory={onCommitHistory}
             isDark={isDark}
           />
         </Suspense>
